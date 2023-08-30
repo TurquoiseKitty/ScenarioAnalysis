@@ -32,3 +32,35 @@ def MFM_Bond_dataConstruct(
         Y_data[i+1-n_dependence] = y
 
     return Z_data, Y_data
+
+
+def EMFM_Bond_dataConstruct(
+        b_vals,
+        rates,
+        factors,
+        n_dependence,
+        A_stress
+):
+    full_N, K = factors.shape
+    _, m = rates.shape
+    d_K, K_A = A_stress.shape
+    assert len(b_vals) == full_N and len(rates) == full_N and K_A == K
+
+
+    Z_data = np.zeros((full_N - n_dependence, d_K + n_dependence * K + m))
+    Y_data = np.zeros(full_N - n_dependence)
+
+    for i in range(n_dependence-1, full_N-1):
+        x_part = np.matmul(A_stress, factors[i+1])
+        r_part = rates[i]
+        f_part = np.reshape(factors[i+1-n_dependence:i+1], -1)
+        y = b_vals[i+1]-b_vals[i]
+
+        Z_data[i+1-n_dependence,:d_K] = x_part
+        Z_data[i+1-n_dependence,d_K:d_K + m] = r_part
+        Z_data[i+1-n_dependence, d_K + m:] = f_part
+
+        Y_data[i+1-n_dependence] = y
+
+    return Z_data, Y_data
+
